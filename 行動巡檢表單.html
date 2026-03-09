@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <!-- 針對手機最佳化的 Viewport 設定，防止縮放以提供類似 App 的體驗 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>水利設施行動巡檢表單</title>
+    <!-- 引入 Tailwind CSS 進行快速、現代化的手機端排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0ea5e9', // 水利/雲端 藍色
+                        secondary: '#10b981', // 正常/環保 綠色
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f1f5f9;
+            /* 隱藏原生滾動條但保持可滾動，讓畫面更像 App */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        /* 自訂 Radio Button 樣式 */
+        .status-radio:checked + div {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+            color: #0369a1;
+        }
+        .status-radio-abnormal:checked + div {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased pb-24">
+
+    <!-- App 頂部導覽列 (Sticky) -->
+    <header class="bg-gradient-to-r from-blue-600 to-primary text-white sticky top-0 z-50 shadow-md">
+        <div class="flex items-center justify-between px-4 py-3 pb-safe">
+            <button type="button" class="p-2 -ml-2 text-white/80 hover:text-white">
+                <i class="fa-solid fa-chevron-left text-xl"></i>
+            </button>
+            <h1 class="text-lg font-bold tracking-wide">現場設備巡檢表單</h1>
+            <button type="button" class="p-2 -mr-2 text-white/80 hover:text-white">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 表單主要內容區 -->
+    <main class="px-4 py-5 space-y-5">
+
+        <!-- 區塊 1：設備資訊 (掃描 QR Code 後自動帶入) -->
+        <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <div class="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
+                <i class="fa-solid fa-location-dot text-primary"></i>
+                <h2 class="font-bold text-slate-700">自動識別資訊</h2>
+                <span class="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">系統帶入</span>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">設施名稱</span>
+                    <span class="font-medium text-slate-800">南屯區一號滯洪池抽水機組</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">設備編號</span>
+                    <span class="font-medium text-slate-800 text-mono">PM-2026-NT01</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">巡檢時間</span>
+                    <span class="font-medium text-slate-800" id="currentTime">載入中...</span>
+                </div>
+            </div>
+        </section>
+
+        <form id="maintenanceForm" class="space-y-5">
+            <!-- 區塊 2：巡檢人員 -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <label for="inspector" class="block font-bold text-slate-700 mb-2">巡檢人員姓名 <span class="text-red-500">*</span></label>
+                <input type="text" id="inspector" required placeholder="請輸入姓名" 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </section>
+
+            <!-- 區塊 3：設備狀態評估 -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h2 class="font-bold text-slate-700 mb-3">設備運轉狀態 <span class="text-red-500">*</span></h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="status" value="normal" class="peer sr-only status-radio" required>
+                        <div class="border border-slate-200 rounded-xl p-3 text-center transition-all flex flex-col items-center gap-1">
+                            <i class="fa-solid fa-circle-check text-2xl text-slate-400 peer-checked:text-primary"></i>
+                            <span class="font-medium">運轉正常</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="status" value="abnormal" class="peer sr-only status-radio-abnormal">
+                        <div class="border border-slate-200 rounded-xl p-3 text-center transition-all flex flex-col items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl text-slate-400 peer-checked:text-red-500"></i>
+                            <span class="font-medium">異常/需維修</span>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- 區塊 4：狀況描述 -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <label for="description" class="block font-bold text-slate-700 mb-2">現場狀況說明</label>
+                <textarea id="description" rows="3" placeholder="請簡述水閘門、馬達或周邊環境現況...（若異常請務必填寫）" 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
+            </section>
+
+            <!-- 區塊 5：拍照上傳 (利用手機原生相機) -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h2 class="font-bold text-slate-700 mb-3">現場照片紀錄</h2>
+                <label class="block w-full border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <input type="file" accept="image/*" capture="environment" class="hidden" id="photoUpload">
+                    <i class="fa-solid fa-camera text-3xl text-slate-400 mb-2"></i>
+                    <p class="text-slate-600 font-medium">點擊開啟相機拍照</p>
+                    <p class="text-xs text-slate-400 mt-1">支援上傳雲端，不再佔用手機容量</p>
+                </label>
+                <!-- 照片預覽區 (模擬) -->
+                <div id="previewArea" class="hidden mt-3 grid grid-cols-3 gap-2">
+                    <!-- 預覽縮圖將透過 JS 生成在這裡 -->
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <!-- 底部固定提交按鈕區塊 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button type="button" onclick="submitForm()" class="w-full bg-primary hover:bg-blue-600 active:bg-blue-700 text-white font-bold text-lg py-3.5 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            確認上傳至雲端系統
+        </button>
+    </div>
+
+    <!-- 成功提示 Modal (預設隱藏) -->
+    <div id="successModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-xl transform transition-transform scale-95">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-check text-3xl text-green-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">上傳成功！</h3>
+            <p class="text-slate-500 mb-6">您的巡檢紀錄與照片已安全同步至雲端系統。</p>
+            <button onclick="closeModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">
+                返回首頁
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 設定當前時間
+        const now = new Date();
+        const timeString = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('currentTime').textContent = timeString;
+
+        // 模擬照片選擇後預覽
+        document.getElementById('photoUpload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewArea = document.getElementById('previewArea');
+                    previewArea.classList.remove('hidden');
+                    
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'relative aspect-square rounded-lg overflow-hidden border border-slate-200';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-full object-cover';
+                    
+                    imgContainer.appendChild(img);
+                    previewArea.appendChild(imgContainer);
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // 模擬表單提交
+        function submitForm() {
+            const form = document.getElementById('maintenanceForm');
+            if (form.checkValidity()) {
+                // 顯示成功 Modal
+                const modal = document.getElementById('successModal');
+                modal.classList.remove('hidden');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            } else {
+                form.reportValidity();
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.add('hidden');
+            // 實際應用中這裡可能會跳轉頁面或重置表單
+            document.getElementById('maintenanceForm').reset();
+            document.getElementById('previewArea').innerHTML = '';
+            document.getElementById('previewArea').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
